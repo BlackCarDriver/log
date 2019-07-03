@@ -39,7 +39,7 @@ func SetLogPath(path string){
 	logPath = path
 }
 
-type logger struct { 
+type Logger struct { 
 	name string
 	flag uint64
 	links uint64
@@ -47,9 +47,9 @@ type logger struct {
 	file *os.File 
 }
 
-//create an logger object
-func NewLogger(name string) *logger{
-	tl := new(logger)
+//create an Logger object
+func NewLogger(name string) *Logger{
+	tl := new(Logger)
 	if logPath == ""{
 		panic("You must use SetLogPath to set path first !")
 	}
@@ -72,7 +72,7 @@ func NewLogger(name string) *logger{
 }
 
 //reference fmt.Sprintf() and custom by flag
-func (l* logger)Write(format string, any ...interface{}){
+func (l* Logger)Write(format string, any ...interface{}){
 	str := ""
 	fmt.Print(str)
 	switch l.flag {
@@ -92,12 +92,12 @@ func (l* logger)Write(format string, any ...interface{}){
 }
 
 //custom the format of log style
-func (l *logger)SetFlag(flag uint64){
+func (l *Logger)SetFlag(flag uint64){
 	l.flag = flag
 }
 
 //clear all content in logfile 
-func (l *logger)Clear(){
+func (l *Logger)Clear(){
 	file, err := os.Create(logPath + l.name)
 	if err!=nil {
 		panic(err)	
