@@ -1,10 +1,11 @@
-package main
+package log
 
 import (
 	"fmt"
 	"sync"
 	"os"
 	"strings"
+	"time"
 )
 
 var (
@@ -38,12 +39,15 @@ func SetLogPath(path string){
 	logPath = path
 }
 
-type logger struct {
+type logger struct { 
 	name string
+	flag uint64
+	links uint64
 	sync.Mutex
 	file *os.File 
 }
 
+//create an logger object
 func NewLogger(name string) *logger{
 	tl := new(logger)
 	if logPath == ""{
@@ -57,12 +61,9 @@ func NewLogger(name string) *logger{
 		ts := fmt.Sprintf("name %s already used !", name)
 		panic(ts)
 	}
-	file, err := os.Open(logPath + name)
-	if err!=nil && os.IsNotExist(err){
-		file, err = os.Create(logPath + name)
-		if err != nil{
-			panic(err)
-		}
+	file, err := os.Create(logPath + name)
+	if err!=nil {
+		panic(err)	
 	}
 	logNames[name] = true
 	tl.name = name
@@ -70,14 +71,39 @@ func NewLogger(name string) *logger{
 	return tl
 }
 
+//reference fmt.Sprintf() and custom by flag
 func (l* logger)Write(format string, any ...interface{}){
-	str := fmt.Sprintf(format, any...)
-	fmt.Println(str)
+	str := ""
+	fmt.Print(str)
+	switch l.flag {
+	case 1:		//add a time stamp 
+		prefix := time.Now().Format("060102-15:04:05    ")
+		str = fmt.Sprintf(prefix + format, any...)
+	case 2:		//add link number 
+		prefix := fmt.Sprintf("%-7d", l.links)
+		str = fmt.Sprintf(prefix + format, any...)
+		l.links ++
+	default:
+		str = fmt.Sprintf(format, any...)
+	}
+	l.Mutex.Lock()
 	l.file.WriteString(str)
+	l.Mutex.Unlock()
 }
 
-func main(){
-	SetLogPath("./temp")
-	mylog := NewLogger("test2.log")
-	mylog.Write("hahahahahah")
+//custom the format of log style
+func (l *logger)SetFlag(flag uint64){
+	l.flag = flag
 }
+
+//clear all content in logfile 
+func (l *logger)Clear(){
+	file, err := os.Create(logPath + l.name)
+	if err!=nil {
+		panic(err)	
+	}
+	l.links = 0
+	l.file = file
+}
+
+
