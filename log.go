@@ -12,7 +12,7 @@ var (
 	logPath string
 	logNames map[string]bool
 )
-
+ 
 func init(){
 	logPath = ""
 	logNames = make(map[string]bool, 0)
@@ -57,6 +57,13 @@ func NewLogger(name string) *Logger{
 		ts := fmt.Sprint("name is nill !\n")
 		panic(ts)
 	} 
+	if strings.Count(name, ".") > 1 || strings.Count(name, `\`) > 0 {
+		ts := fmt.Sprintf("Logger name %s can't not be used!", name)
+		panic(ts)
+	}
+	if strings.Count(name, ".") == 0 {
+		name += ".log"
+	}
 	if logNames[name] {
 		ts := fmt.Sprintf("name %s already used !", name)
 		panic(ts)
